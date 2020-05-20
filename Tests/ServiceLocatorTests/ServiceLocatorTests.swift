@@ -2,14 +2,38 @@ import XCTest
 @testable import ServiceLocator
 
 final class ServiceLocatorTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(ServiceLocator().text, "Hello, World!")
+    struct Pump {
+        func pump() -> String {
+            return "pumping..."
+        }
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    struct ElectricHeater {
+        func heat() -> String {
+            return "heating..."
+        }
+    }
+    
+    class CoffeeMakerViewModel{
+        @Inject var heater: ElectricHeater?
+        @Inject var pump: Pump?
+        
+        func makeCoffee() -> String {
+            var result = ""
+            result.append(self.heater?.heat() ?? "")
+            result.append(self.pump?.pump() ?? "")
+            result.append("Making coffee...")
+            
+            return result
+        }
+    }
+    
+    func testInjection() {
+        ServiceLocator.shared.addService(ElectricHeater())
+        ServiceLocator.shared.addService(Pump())
+        let coffeeMaker = CoffeeMakerViewModel()
+        let result = coffeeMaker.makeCoffee()
+        
+        XCTAssertEqual(result, "heating...pumping...Making coffee...", "Must inject 2 component")
+    }
 }
